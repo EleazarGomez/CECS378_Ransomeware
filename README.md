@@ -1,2 +1,4 @@
 # CECS378_Ransomeware
-CECS378 Lab
+Ransomeware Lab for CECS 378.
+
+Server domain: www.ic1101.me.
