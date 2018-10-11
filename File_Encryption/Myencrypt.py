@@ -6,11 +6,9 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 
-#from pathlib import Path
-
 def Myencrypt(message, key):
-    if (len(key) * BITS_PER_BYTE != KEY_LENGTH_BITS):
-        raise ValueError("Incorrect key length. Must be 256 bits.")
+    if (len(key) != KEY_LENGTH_BYTES):
+        raise ValueError("Incorrect key length. Must be 256 bits (32 bytes).")
 
     IV = os.urandom(IV_LENGTH_BYTES)
     padder = padding.PKCS7(MESSAGE_LENGTH_BITS).padder()
@@ -39,14 +37,15 @@ def Mydecrypt(ciphertext, key, IV):
 # TEST
 # =====================
 
-test_key = os.urandom(int(KEY_LENGTH_BITS / BITS_PER_BYTE))
+if __name__ == "__main__":
+    test_key = os.urandom(KEY_LENGTH_BYTES)
 
-msg = "test plaintext"
+    msg = "test plaintext"
 
-msg_bytes = str.encode(msg)
+    msg_bytes = str.encode(msg)
 
-print(msg_bytes)
+    print(msg_bytes)
 
-x = Myencrypt(msg_bytes, test_key)
+    x = Myencrypt(msg_bytes, test_key)
 
-print(Mydecrypt(x[0], test_key, x[1]))
+    print(Mydecrypt(x[0], test_key, x[1]))
