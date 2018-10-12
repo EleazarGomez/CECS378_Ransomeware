@@ -15,11 +15,11 @@ def MyfileEncrypt(filepath):
         file = open(filepath, 'r')
         content = file.read()
         encodedContent = content.encode()
-        encodedFilepath = 'encodedFile.txt'
+        encodedFilepath = '..\\..\\encodedFile.txt'
     else:
         file = open(filepath, 'rb')
         encodedContent = file.read()
-        encodedFilepath = 'encodedFile.jpg'
+        encodedFilepath = '..\\..\\encodedFile.jpg'
         
     file.close()
     
@@ -42,11 +42,11 @@ def MyfileDecrypt(filepath, key, IV, ext):
     
     if(ext == '.txt'):
         message = message.decode()
-        file = open('decodedFile.txt', 'w')
+        file = open('..\\..\\decodedFile.txt', 'w')
         file.write(message)
         file.close()
     else:
-        file = open('decodedFile.jpg', 'wb')
+        file = open('..\\..\\decodedFile.jpg', 'wb')
         file.write(message)
         file.close()
             
@@ -61,9 +61,9 @@ if __name__ == "__main__":
     choice = int(input())
 
     if (choice == 1):
-        x = MyfileEncrypt("C:\\Users\\Eli\\Classes\\Security\\Lab\\CECS378_Ransomeware\\Test_Files\\test.txt")
+        x = MyfileEncrypt("..\\Test_Files\\test.txt")
         message = MyfileDecrypt(x[4], x[2], x[1], x[3])
         print(message)
     else:
-        x = MyfileEncrypt("C:\\Users\\Eli\\Classes\\Security\\Lab\\CECS378_Ransomeware\\Test_Files\\test_image.jpg")
+        x = MyfileEncrypt("..\\Test_Files\\test_image.jpg")
         message = MyfileDecrypt(x[4], x[2], x[1], x[3])
