@@ -58,7 +58,17 @@ def MyfileDecrypt(filepath, key, IV, ext):
 
 if __name__ == "__main__":
     print("Which file do you wish to test, 1. test.txt or 2. test_image.jpg? ")
-    choice = int(input())
+    choice = 0
+
+    while (choice != 1 and choice != 2):
+        try:
+            choice = int(input())
+            if (choice != 1 and choice != 2):
+                print("Invalide choice")
+            else:
+                break
+        except:
+            print("Invalid data")
 
     if (choice == 1):
         x = MyfileEncrypt("..\\Test_Files\\TXT_test.txt")
