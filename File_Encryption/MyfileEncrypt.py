@@ -61,9 +61,9 @@ if __name__ == "__main__":
     choice = int(input())
 
     if (choice == 1):
-        x = MyfileEncrypt("..\\Test_Files\\test.txt")
+        x = MyfileEncrypt("..\\Test_Files\\TXT_test.txt")
         message = MyfileDecrypt(x[4], x[2], x[1], x[3])
         print(message)
     else:
-        x = MyfileEncrypt("..\\Test_Files\\test_image.jpg")
+        x = MyfileEncrypt("..\\Test_Files\\JPG_test.jpg")
         message = MyfileDecrypt(x[4], x[2], x[1], x[3])
