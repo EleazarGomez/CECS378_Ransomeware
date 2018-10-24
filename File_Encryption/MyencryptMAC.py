@@ -26,9 +26,9 @@ def MyencryptMAC(message, EncKey, HMACKey):
     C = encryptor.update(message) + encryptor.finalize()
 
     # MAC
-    tag = hmac.HMAC(HMACKey, hashes.SHA256(), backend = default_backend())
-    tag.update(C)
-    tag = tag.finalize()
+    t = hmac.HMAC(HMACKey, hashes.SHA256(), backend = default_backend())
+    t.update(C)
+    tag = t.finalize()
 	
     return (C, IV, tag)
 
