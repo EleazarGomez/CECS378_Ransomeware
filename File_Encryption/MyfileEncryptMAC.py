@@ -1,5 +1,6 @@
 import os
 import json
+import binascii
 
 from CONSTANTS import *
 from MyencryptMAC import *
@@ -22,7 +23,7 @@ def MyfileEncryptMAC(filepath):
     else:
         file = open(filepath, 'rb')
         encodedContent = file.read()
-        encodedFilepath = '..\\..\\encodedFile.jpeg'
+        encodedFilepath = '..\\..\\encodedFile' + ext
         
     file.close()
 
@@ -32,27 +33,51 @@ def MyfileEncryptMAC(filepath):
 
     # Encrypt
     C, IV, tag = MyencryptMAC(encodedContent, EncKey, HMACKey)
-    
+
+    # Convert data to strings
+    CString = binascii.hexlify(C).decode('utf-8')
+    IVString = binascii.hexlify(IV).decode('utf-8')
+    EncKeyString = binascii.hexlify(EncKey).decode('utf-8')
+    HMACKeyString = binascii.hexlify(HMACKey).decode('utf-8')
+    tagString = binascii.hexlify(tag).decode('utf-8')
+
+    # Store in JSON
+    data = {'C': CString, 'IV': IVString, 'tag': tagString,
+            'EncKey': EncKeyString, 'HMACKey': HMACKeyString, 'ext': ext}
+
+    file = open('..\\..\\data.json', 'w')
+    json.dump(data, file)
+    file.close()
+
+    # Output
     file = open(encodedFilepath, 'wb')
     file.write(C)
     file.close()
     
-    return C, IV, EncKey, HMACKey, tag, ext, encodedFilepath
+    return C, IV, tag, EncKey, HMACKey, ext
 
-def MyfileDecryptMAC(IV, EncKey, HMACKey, tag, ext, filepath):
-    # Read file
-    file = open(filepath, 'rb')
-    content = file.read()
+def MyfileDecryptMAC():
+    # Read data from JSON
+    file = open('..\\..\\data.json', 'r')
+    data = json.load(file)
     file.close()
+
+    # Convert data to bytes
+    C = binascii.unhexlify(data['C'].encode('utf-8'))
+    IV = binascii.unhexlify(data['IV'].encode('utf-8'))
+    tag = binascii.unhexlify(data['tag'].encode('utf-8'))
+    EncKey = binascii.unhexlify(data['EncKey'].encode('utf-8'))
+    HMACKey = binascii.unhexlify(data['HMACKey'].encode('utf-8'))
+    ext = data['ext']
 
     # Verify tag
     verificationTag = hmac.HMAC(HMACKey, hashes.SHA256(),
                                backend = default_backend())
-    verificationTag.update(content)
+    verificationTag.update(C)
     verificationTag.verify(tag)
 
     # Decrypt
-    message = MydecryptMAC(content, IV, tag, EncKey, HMACKey)
+    message = MydecryptMAC(C, IV, tag, EncKey, HMACKey)
 
     # Output
     if(ext == '.txt'):
@@ -61,7 +86,7 @@ def MyfileDecryptMAC(IV, EncKey, HMACKey, tag, ext, filepath):
         file.write(message)
         file.close()
     else:
-        file = open('..\\..\\decodedFile.jpeg', 'wb')
+        file = open('..\\..\\decodedFile' + ext, 'wb')
         file.write(message)
         file.close()
             
@@ -72,13 +97,14 @@ def MyfileDecryptMAC(IV, EncKey, HMACKey, tag, ext, filepath):
 # =====================
 
 if __name__ == "__main__":
-    print("Which file do you wish to test, 1. TXT_test.txt or 2. JPEG_test.jpeg? ")
+    print("Which file do you wish to test, 1. TXT_test.txt" \
+          ", 2. JPEG_test.jpeg or 3. JPG_test.jpg? ")
     choice = 0
 
-    while (choice != 1 and choice != 2):
+    while (choice != 1 and choice != 2 and choice != 3):
         try:
             choice = int(input())
-            if (choice != 1 and choice != 2):
+            if (choice != 1 and choice != 2 and choice != 3):
                 print("Invalide choice")
             else:
                 break
@@ -87,8 +113,11 @@ if __name__ == "__main__":
 
     if (choice == 1):
         x = MyfileEncryptMAC("..\\Test_Files\\TXT_test.txt")
-        message = MyfileDecryptMAC(x[1], x[2], x[3], x[4], x[5], x[6])
+        message = MyfileDecryptMAC()
         print(message)
-    else:
+    elif (choice == 2):
         x = MyfileEncryptMAC("..\\Test_Files\\JPEG_test.jpeg")
-        message = MyfileDecryptMAC(x[1], x[2], x[3], x[4], x[5], x[6])
+        message = MyfileDecryptMAC()
+    else:
+        x = MyfileEncryptMAC("..\\Test_Files\\JPG_test.jpg")
+        message = MyfileDecryptMAC()
