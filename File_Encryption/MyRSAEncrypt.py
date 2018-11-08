@@ -123,7 +123,7 @@ def MyRSADecrypt(RSA_PrivateKey_filepath):
             
     return message
 
-if __name__ == "__main__":
+def generateKeys():
     # Generate RSA key for key pairs
     key = rsa.generate_private_key(
         public_exponent = 65537,
@@ -152,6 +152,27 @@ if __name__ == "__main__":
     f = open('..\\..\\rsa_private_key.pem', 'wb')
     f.write(privateKey)
     f.close()
+
+def checkKeys():
+    rsa_public_key = 'rsa_public_key.pem'
+    rsa_private_key = 'rsa_private_key.pem'
+    publicKeyChecker = False
+    privateKeyChecker = False
+    with os.scandir('../..') as it:
+        for entry in it:
+            if not entry.name.startswith('.') and entry.is_file():
+                if(entry.name == 'rsa_public_key.pem'):
+                    publicKeyChecker = True
+                if(entry.name == 'rsa_private_key.pem'):
+                    privateKeyChecker = True
+    if(publicKeyChecker == False or privateKeyChecker == False):
+        print("There are no existing key(s)! Keys will now be generated.")
+        generateKeys()
+    return rsa_public_key, rsa_private_key
+    
+
+if __name__ == "__main__":
+    rsa_public_key, rsa_private_key = checkKeys()
     
     # Calling RSA Encryptor Decryptor modules
     mypath = "..\\Test_Files\\JPEG_test.jpeg"
