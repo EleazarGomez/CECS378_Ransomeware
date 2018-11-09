@@ -44,11 +44,6 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
                                        label = None)
                                    )
     
-    # Create tag
-    digest = hmac.HMAC(HMACKey, hashes.SHA256(), backend = default_backend())
-    digest.update(C)
-    tag = digest.finalize()
-    
     # Convert data to strings
     RSACipherString = binascii.hexlify(RSACipher).decode('utf-8')
     CString = binascii.hexlify(C).decode('utf-8')
@@ -100,28 +95,9 @@ def MyRSADecrypt(RSA_PrivateKey_filepath):
     EncKey = key[0:32]
     HMACKey = key[32:64]
     
-    # Verify Tag
-    verificationTag = hmac.HMAC(HMACKey, hashes.SHA256(),
-                                backend = default_backend())
-    verificationTag.update(C)
-    verificationTag.verify(tag)
-    
-    
     # Decrypt
-    message = MydecryptMAC(C, IV, tag, EncKey, HMACKey)
+    message = MyfileDecryptMAC()
 
-    # Output
-    if(ext == '.txt'):
-        message = message.decode()
-        file = open('..\\..\\decodedFile.txt', 'w')
-        file.write(message)
-        file.close()
-    else:
-        file = open('..\\..\\decodedFile' + ext, 'wb')
-        file.write(message)
-        file.close()
-            
-    return message
 
 def generateKeys():
     # Generate RSA key for key pairs
