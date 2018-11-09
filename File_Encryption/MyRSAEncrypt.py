@@ -1,4 +1,4 @@
-import json, requests, os, socket, sys, base64, cryptography
+import json, os, cryptography
 import binascii
 
 from CONSTANTS import *
@@ -138,7 +138,7 @@ def generateKeys():
         format = serialization.PublicFormat.SubjectPublicKeyInfo
         )
     
-    file = open('..\\..\\rsa_public_key.pem', 'wb')
+    file = open(RSA_PUBLIC_KEY_FILEPATH, 'wb')
     file.write(publicKey)
     file.close()
     
@@ -149,35 +149,34 @@ def generateKeys():
         encryption_algorithm = serialization.NoEncryption()
         )
     
-    f = open('..\\..\\rsa_private_key.pem', 'wb')
+    f = open(RSA_PRIVATE_KEY_FILEPATH, 'wb')
     f.write(privateKey)
     f.close()
 
 def checkKeys():
-    rsa_public_key = 'rsa_public_key.pem'
-    rsa_private_key = 'rsa_private_key.pem'
     publicKeyChecker = False
     privateKeyChecker = False
-    with os.scandir('../..') as it:
+
+    # Search directory for pair of keys
+    with os.scandir(RSA_KEYS_DIRECTORY) as it:
         for entry in it:
             if not entry.name.startswith('.') and entry.is_file():
-                if(entry.name == 'rsa_public_key.pem'):
+                if(entry.name == RSA_PUBLIC_KEY_FILENAME):
                     publicKeyChecker = True
-                if(entry.name == 'rsa_private_key.pem'):
+                if(entry.name == RSA_PRIVATE_KEY_FILENAME):
                     privateKeyChecker = True
+
+    # If either key is not found, generate new keys       
     if(publicKeyChecker == False or privateKeyChecker == False):
         print("There are no existing key(s)! Keys will now be generated.")
         generateKeys()
-    return rsa_public_key, rsa_private_key
     
 
 if __name__ == "__main__":
-    rsa_public_key, rsa_private_key = checkKeys()
+    checkKeys()
     
     # Calling RSA Encryptor Decryptor modules
-    mypath = "..\\Test_Files\\JPEG_test.jpeg"
-    RSA_PublicKey_filepath = '..\\..\\rsa_public_key.pem'
-    RSA_PrivateKey_filepath = '..\\..\\rsa_private_key.pem'
+    testFilePath = "..\\Test_Files\\JPEG_test.jpeg"
     
-    MyRSAEncrypt(mypath, RSA_PublicKey_filepath)
-    MyRSADecrypt(RSA_PrivateKey_filepath)
+    MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
+    MyRSADecrypt(RSA_PRIVATE_KEY_FILEPATH)
