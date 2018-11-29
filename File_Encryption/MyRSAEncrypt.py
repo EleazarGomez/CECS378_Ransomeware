@@ -11,20 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     # Encrypt file
-    MyfileEncryptMAC(filepath)
-    file = open('..\\..\\data.json', 'r')
-    data = json.load(file)
-    file.close()
-
-    # Convert data to bytes
-    C = binascii.unhexlify(data['C'].encode('utf-8'))
-    IV = binascii.unhexlify(data['IV'].encode('utf-8'))
-    tag = binascii.unhexlify(data['tag'].encode('utf-8'))
-    EncKey = binascii.unhexlify(data['EncKey'].encode('utf-8'))
-    HMACKey = binascii.unhexlify(data['HMACKey'].encode('utf-8'))
-
-    # Get ext
-    ext = data['ext']
+    filename, C, IV, tag, EncKey, HMACKey, ext = MyfileEncryptMAC(filepath)
     
     # Concatenate encryption key and hmac key
     keysConcatenated = EncKey + HMACKey
@@ -54,15 +41,15 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     RSAdata = {'RSACipher': RSACipherString, 'C': CString, 'IV': IVString,
             'tag': tagString, 'ext': ext}
     
-    file = open('..\\..\\RSAdata.json', 'w')
+    file = open('..\\..\\' + filename + 'ENC.json', 'w')
     json.dump(RSAdata, file)
     file.close()
 
-    return RSACipher, C, IV, tag, ext
+    return filename
     
-def MyRSADecrypt(RSA_PrivateKey_filepath):
+def MyRSADecrypt(filename, RSA_PrivateKey_filepath):
     # Read RSA data from JSON
-    file = open('..\\..\\RSAdata.json', 'r')
+    file = open('..\\..\\' + filename + 'ENC.json', 'r')
     RSAdata = json.load(file)
     file.close()
 
@@ -96,7 +83,7 @@ def MyRSADecrypt(RSA_PrivateKey_filepath):
     HMACKey = key[32:64]
     
     # Decrypt
-    message = MyfileDecryptMAC()
+    message = MyfileDecryptMAC(filename, C, IV, tag, EncKey, HMACKey, ext)
 
 
 def generateKeys():
@@ -154,5 +141,5 @@ if __name__ == "__main__":
     # Calling RSA Encryptor Decryptor modules
     testFilePath = "..\\Test_Files\\JPEG_test.jpeg"
     
-    MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
-    MyRSADecrypt(RSA_PRIVATE_KEY_FILEPATH)
+    x = MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
+    MyRSADecrypt(x, RSA_PRIVATE_KEY_FILEPATH)
