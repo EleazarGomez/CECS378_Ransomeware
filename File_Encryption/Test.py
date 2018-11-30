@@ -1,11 +1,5 @@
 from Encrypt import *
-from Decrypt import *
-
-
-def Test():
-    filenames = Encrypt()
-    Decrypt(filenames)
-            
+from Decrypt import *     
     
 
 # =====================
@@ -13,4 +7,9 @@ def Test():
 # =====================
 
 if __name__ == "__main__":
-    Test()
+    print("Press Enter to Encrypt: ")
+    input()
+    fileInfo = Encrypt()
+    print("Press Enter to Decrypt: ")
+    input()
+    Decrypt(fileInfo)

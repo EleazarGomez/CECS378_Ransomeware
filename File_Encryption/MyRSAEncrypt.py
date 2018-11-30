@@ -135,11 +135,15 @@ def checkKeys():
         generateKeys()
     
 
+checkKeys()
+
+
 if __name__ == "__main__":
     checkKeys()
     
     # Calling RSA Encryptor Decryptor modules
-    testFilePath = "..\\Test_Files\\JPEG_test.jpeg"
+    testFilePath = ".\\JPEG_test.jpeg"
     
     x, y = MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
+    os.remove(x + "\\" + y)
     MyRSADecrypt(x, y, RSA_PRIVATE_KEY_FILEPATH)
