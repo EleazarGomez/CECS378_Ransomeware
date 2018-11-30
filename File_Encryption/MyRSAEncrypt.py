@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     # Encrypt file
-    filename, C, IV, tag, EncKey, HMACKey, ext = MyfileEncryptMAC(filepath)
+    pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext = MyfileEncryptMAC(filepath)
     
     # Concatenate encryption key and hmac key
     keysConcatenated = EncKey + HMACKey
@@ -41,15 +41,15 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     RSAdata = {'RSACipher': RSACipherString, 'C': CString, 'IV': IVString,
             'tag': tagString, 'ext': ext}
     
-    file = open('..\\..\\' + filename + 'ENC.json', 'w')
+    file = open(pathToFile + "\\" + filename + '.json', 'w')
     json.dump(RSAdata, file)
     file.close()
 
-    return filename
+    return pathToFile, filename
     
-def MyRSADecrypt(filename, RSA_PrivateKey_filepath):
+def MyRSADecrypt(pathToFile, filename, RSA_PrivateKey_filepath):
     # Read RSA data from JSON
-    file = open('..\\..\\' + filename + 'ENC.json', 'r')
+    file = open(pathToFile + "\\" + filename + '.json', 'r')
     RSAdata = json.load(file)
     file.close()
 
@@ -83,7 +83,7 @@ def MyRSADecrypt(filename, RSA_PrivateKey_filepath):
     HMACKey = key[32:64]
     
     # Decrypt
-    message = MyfileDecryptMAC(filename, C, IV, tag, EncKey, HMACKey, ext)
+    message = MyfileDecryptMAC(pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext)
 
 
 def generateKeys():
@@ -141,5 +141,5 @@ if __name__ == "__main__":
     # Calling RSA Encryptor Decryptor modules
     testFilePath = "..\\Test_Files\\JPEG_test.jpeg"
     
-    x = MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
-    MyRSADecrypt(x, RSA_PRIVATE_KEY_FILEPATH)
+    x, y = MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
+    MyRSADecrypt(x, y, RSA_PRIVATE_KEY_FILEPATH)
