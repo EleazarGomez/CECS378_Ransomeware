@@ -1,13 +1,29 @@
-import json, os, cryptography
+# Eleazar Gomez
+# Dion Woo
+#
+# RSA File Step 2: MyRSAEncrypt and MyRSADecrypt
+
+from os import remove
+import json
 import binascii
 
 from CONSTANTS import *
 from MyfileEncryptMAC import *
+from checkKeys import *
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding, serialization, hashes, hmac, asymmetric
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization, hashes, asymmetric
+
+# (pathToFile, filename) = MyRSAEncrypt(filepath, RSA_Publickey_filepath)
+#
+# In this method, you first call MyfileEncryptMAC (filepath) which will
+# return (C, IV, tag, Enckey, HMACKey, ext). You then will initialize an
+# RSA public key encryption object and load pem publickey from the
+# RSA_publickey_filepath. Lastly, you encrypt the key variable
+# ("key" = EncKey + HMACKey (concatenated)) using the RSA publickey in OAEP
+# padding mode. The result will be RSACipher. You then return
+# (RSACipher, C, IV, ext).
+
 
 def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     # Encrypt file
@@ -22,7 +38,7 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
                                                   default_backend())
     file.close()
 
-    # Create cipher for public key
+    # Create cipher for public key (OAEP padding, SHA256)
     RSACipher = publicKey.encrypt(keysConcatenated,
                                    asymmetric.padding.OAEP(
                                        mgf = asymmetric.padding.MGF1(
@@ -37,7 +53,7 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     IVString = binascii.hexlify(IV).decode('utf-8')
     tagString = binascii.hexlify(tag).decode('utf-8')
     
-    # Store in JSON
+    # Store data in JSON (RSACipher, C, IV, tag, ext)
     RSAdata = {'RSACipher': RSACipherString, 'C': CString, 'IV': IVString,
             'tag': tagString, 'ext': ext}
     
@@ -45,8 +61,13 @@ def MyRSAEncrypt(filepath, RSA_PublicKey_filepath):
     json.dump(RSAdata, file)
     file.close()
 
+    # Return the data (pathToFile, filename)
     return pathToFile, filename
-    
+
+# message = MyRSADecrypt(pathToFile, filename, RSA_PrivateKey_filepath)
+#
+# Inverse of MyRSAEncrypt. Returns the decrypted message.
+
 def MyRSADecrypt(pathToFile, filename, RSA_PrivateKey_filepath):
     # Read RSA data from JSON
     file = open(pathToFile + "\\" + filename + '.json', 'r')
@@ -85,58 +106,12 @@ def MyRSADecrypt(pathToFile, filename, RSA_PrivateKey_filepath):
     # Decrypt
     message = MyfileDecryptMAC(pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext)
 
+    # Return the message
+    return message
 
-def generateKeys():
-    # Generate RSA key for key pairs
-    key = rsa.generate_private_key(
-        public_exponent = 65537,
-        key_size = 2048,
-        backend = default_backend()
-        )
-    
-    # Create and write public key
-    public = key.public_key()
-    publicKey = public.public_bytes(
-        encoding = serialization.Encoding.PEM,
-        format = serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-    
-    file = open(RSA_PUBLIC_KEY_FILEPATH, 'wb')
-    file.write(publicKey)
-    file.close()
-    
-    # Create and write private key
-    privateKey = key.private_bytes(
-        encoding = serialization.Encoding.PEM,
-        format = serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm = serialization.NoEncryption()
-        )
-    
-    f = open(RSA_PRIVATE_KEY_FILEPATH, 'wb')
-    f.write(privateKey)
-    f.close()
-
-def checkKeys():
-    publicKeyChecker = False
-    privateKeyChecker = False
-
-    # Search directory for pair of keys
-    with os.scandir(RSA_KEYS_DIRECTORY) as it:
-        for entry in it:
-            if not entry.name.startswith('.') and entry.is_file():
-                if(entry.name == RSA_PUBLIC_KEY_FILENAME):
-                    publicKeyChecker = True
-                if(entry.name == RSA_PRIVATE_KEY_FILENAME):
-                    privateKeyChecker = True
-
-    # If either key is not found, generate new keys       
-    if(publicKeyChecker == False or privateKeyChecker == False):
-        print("There are no existing key(s)! Keys will now be generated.")
-        generateKeys()
-    
-
-checkKeys()
-
+# =====================
+# TEST
+# =====================
 
 if __name__ == "__main__":
     checkKeys()
@@ -145,5 +120,5 @@ if __name__ == "__main__":
     testFilePath = ".\\JPEG_test.jpeg"
     
     x, y = MyRSAEncrypt(testFilePath, RSA_PUBLIC_KEY_FILEPATH)
-    os.remove(x + "\\" + y)
+    remove(x + "\\" + y + '.jpeg')
     MyRSADecrypt(x, y, RSA_PRIVATE_KEY_FILEPATH)

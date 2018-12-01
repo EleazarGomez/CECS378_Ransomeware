@@ -1,55 +1,79 @@
-import os
+# Eleazar Gomez
+# Dion Woo
+#
+# File Encryption Step 1: MyfileEncrypt and MyfileDecrypt
+
+from os import path, urandom
 
 from CONSTANTS import *
 from Myencrypt import *
 
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
+
+# (C, IV, key, ext) = MyfileEncrypt (filepath):
+#
+# In this method, you'll generate a 32 Byte key. You open and read the
+# file as a string. You then call the above method to encrypt your file
+# using the key you generated. You return the cipher C, IV, key and the
+# extension of the file (as a string).
 
 def MyfileEncrypt(filepath):
-    splitFilePath = os.path.splitext(filepath)
+    # Split filepath into path and ext and retrieve ext
+    splitFilePath = path.splitext(filepath)
     ext = splitFilePath[1]
     
+    # If the file is a text file, read the content and then encode.
+    # Otherwise, read the file as bytes. Create a filepath to store
+    # the encoded file.
     if(ext == '.txt'):
         file = open(filepath, 'r')
         content = file.read()
         encodedContent = content.encode()
-        encodedFilepath = '..\\..\\encodedFile.txt'
+        encryptedFilepath = '..\\..\\encryptedFile.txt'
     else:
         file = open(filepath, 'rb')
         encodedContent = file.read()
-        encodedFilepath = '..\\..\\encodedFile.jpg'
-        
+        encryptedFilepath = '..\\..\\encryptedFile' + ext
     file.close()
-    
-    key = os.urandom(KEY_LENGTH_BYTES)
-    
+
+    # Generate a random 32 byte key
+    key = urandom(KEY_LENGTH_BYTES)
+
+    # Pass the encoded content and key to Myencrypt and retrieve the C and IV
     C, IV = Myencrypt(encodedContent, key)
-    
-    file = open(encodedFilepath, 'wb')
+
+    # Create encrypted file
+    file = open(encryptedFilepath, 'wb')
     file.write(C)
     file.close()
-    
-    return C, IV, key, ext, encodedFilepath
+
+    # Return data (C, IV, key, ext, encryptedFilepath)
+    return C, IV, key, ext, encryptedFilepath
+
+# message = MyfileDecrypt(filepath, key, IV, ext)
+#
+# Inverse of MyfileEncrypt. Returns the decrypted message.
 
 def MyfileDecrypt(filepath, key, IV, ext):
+    # Read the byte data from the encrypted file
     file = open(filepath, 'rb')
     content = file.read()
     file.close()
-    
+
+    # Decrypt the file
     message = Mydecrypt(content, key, IV)
-    
+
+    # Create the decrypted file
     if(ext == '.txt'):
         message = message.decode()
-        file = open('..\\..\\decodedFile.txt', 'w')
+        file = open('..\\..\\decryptedFile.txt', 'w')
         file.write(message)
         file.close()
     else:
-        file = open('..\\..\\decodedFile.jpg', 'wb')
+        file = open('..\\..\\decryptedFile.jpg', 'wb')
         file.write(message)
         file.close()
-            
+
+    # Return the message
     return message
 
 # =====================

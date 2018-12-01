@@ -1,5 +1,9 @@
-import os
-import json
+# Eleazar Gomez
+# Dion Woo
+#
+# File Encryption Step 2: MyencryptMAC and MydecryptMAC
+
+from os import urandom
 
 from CONSTANTS import *
 
@@ -7,15 +11,20 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding, hashes, hmac
 
+# (C, IV, tag) = MyencryptMAC(message, EncKey, HMACKey)
+#
+# Modify your File Encryption to include the policy of
+# Encrypt-then-MAC for every encryption.
+
 def MyencryptMAC(message, EncKey, HMACKey):
     # Check Key Length
     if (len(EncKey) != KEY_LENGTH_BYTES or len(HMACKey) != KEY_LENGTH_BYTES):
         raise ValueError("Incorrect key(s) length. Must be 256 bits (32 bytes).")
 
-    # Generate IV
-    IV = os.urandom(IV_LENGTH_BYTES)
+    # Generate random IV
+    IV = urandom(IV_LENGTH_BYTES)
 
-    # Pad message
+    # Pad message (PKCS7)
     padder = padding.PKCS7(MESSAGE_LENGTH_BITS).padder()	
     message = padder.update(message)
     message += padder.finalize()
@@ -25,12 +34,16 @@ def MyencryptMAC(message, EncKey, HMACKey):
                 backend = default_backend()).encryptor()
     C = encryptor.update(message) + encryptor.finalize()
 
-    # MAC
+    # MAC (SHA256)
     t = hmac.HMAC(HMACKey, hashes.SHA256(), backend = default_backend())
     t.update(C)
     tag = t.finalize()
 	
-    return (C, IV, tag)
+    return C, IV, tag
+
+# message = MydecryptMAC(C, IV, tag, EncKey, HMACKey)
+#
+# Inverse of MyencryptMAC. Returns the decrypted message.
 
 def MydecryptMAC(C, IV, tag, EncKey, HMACKey):
     # Verify tag
@@ -48,7 +61,8 @@ def MydecryptMAC(C, IV, tag, EncKey, HMACKey):
     unpadder = padding.PKCS7(MESSAGE_LENGTH_BITS).unpadder()
     message = unpadder.update(message)
     message = message + unpadder.finalize()
-    
+
+    # Return the message
     return message
 
 # =====================
@@ -56,8 +70,8 @@ def MydecryptMAC(C, IV, tag, EncKey, HMACKey):
 # =====================
 
 if __name__ == "__main__":
-    test_EncKey = os.urandom(KEY_LENGTH_BYTES)
-    test_HMACKey = os.urandom(KEY_LENGTH_BYTES)
+    test_EncKey = urandom(KEY_LENGTH_BYTES)
+    test_HMACKey = urandom(KEY_LENGTH_BYTES)
 
     msg = "test plaintext"
 

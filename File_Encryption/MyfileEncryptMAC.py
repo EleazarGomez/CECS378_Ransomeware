@@ -1,18 +1,28 @@
-import os
-import json
-import binascii
+# Eleazar Gomez
+# Dion Woo
+#
+# File Encryption Step 2: MyfileEncryptMAC and MyfileDecryptMAC
+
+from os import path, urandom
 
 from CONSTANTS import *
 from MyencryptMAC import *
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding, hashes, hmac
+from cryptography.hazmat.primitives import hashes, hmac
 
+# (C, IV, tag, Enckey, HMACKey, ext) = MyfileEncryptMAC(filepath)
+#
+# Modify your File Encryption to include the policy of
+# Encrypt-then-MAC for every encryption.
 
 def MyfileEncryptMAC(filepath):
-    # Read file
-    splitFilePath = os.path.splitext(filepath)
+    # Split the file path to extract ext
+    splitFilePath = path.splitext(filepath)
+    ext = splitFilePath[1]
+    
+    # Split the the first element of the above split to determine the
+    # filename and the path of directories that led to the file
     split = splitFilePath[0].split("\\")
     filename = split[len(split) - 1]
     pathToFile = ""
@@ -25,9 +35,8 @@ def MyfileEncryptMAC(filepath):
             pathToFile = pathToFile + "\\"
         
         pathToFile = pathToFile + split[i]
-    
-    ext = splitFilePath[1]
-    
+
+    # Read the file
     if(ext == '.txt'):
         file = open(filepath, 'r')
         content = file.read()
@@ -39,13 +48,18 @@ def MyfileEncryptMAC(filepath):
     file.close()
 
     # Generate keys
-    EncKey = os.urandom(KEY_LENGTH_BYTES)
-    HMACKey = os.urandom(KEY_LENGTH_BYTES)
+    EncKey = urandom(KEY_LENGTH_BYTES)
+    HMACKey = urandom(KEY_LENGTH_BYTES)
 
     # Encrypt
     C, IV, tag = MyencryptMAC(encodedContent, EncKey, HMACKey)
-    
+
+    # Return the data (pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext)
     return pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext
+
+# MyfileDecryptMac(pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext)
+#
+# Inverse of MyfileEncryptMAC. Returns the decrypted message.
 
 def MyfileDecryptMAC(pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext):
     # Verify tag
@@ -67,7 +81,8 @@ def MyfileDecryptMAC(pathToFile, filename, C, IV, tag, EncKey, HMACKey, ext):
         file = open(pathToFile + "\\" + filename + ext, 'wb')
         file.write(message)
         file.close()
-            
+
+    # Return the message 
     return message
 
 # =====================
